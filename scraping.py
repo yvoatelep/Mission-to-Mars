@@ -5,6 +5,10 @@ import pandas as pd
 import datetime as dt
 from webdriver_manager.chrome import ChromeDriverManager
 
+#    Initiate headless driver for deployment
+# executable_path = {'executable_path': ChromeDriverManager().install()}
+# browser = Browser('chrome', **executable_path, headless=True)
+
 def scrape_all():
     # Initiate headless driver for deployment
     executable_path = {'executable_path': ChromeDriverManager().install()}
@@ -18,7 +22,8 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "hemisphere_images": hemisphere_data(browser)
     }
 
     # Stop webdriver and return data
@@ -26,6 +31,9 @@ def scrape_all():
     return data
 
 def mars_news(browser):
+    # Initiate headless driver for deployment
+    # executable_path = {'executable_path': ChromeDriverManager().install()}
+    # browser = Browser('chrome', **executable_path, headless=True)
 
     # Visit the Mars news site
     url = 'https://redplanetscience.com/'
@@ -44,7 +52,7 @@ def mars_news(browser):
 
         slide_elem = news_soup.select_one('div.list_text')
 
-        slide_elem.find('div', class_='content_title')
+        # slide_elem.find('div', class_='content_title')
 
         # Use the parent element to find the first a tag and save it as `news_title`
         news_title = slide_elem.find('div', class_='content_title').get_text()
@@ -61,6 +69,9 @@ def mars_news(browser):
 
 # ## JPL Space Images Featured Image
 def featured_image(browser):
+    # Initiate headless driver for deployment
+    # executable_path = {'executable_path': ChromeDriverManager().install()}
+    # browser = Browser('chrome', **executable_path, headless=True)
 
 # Visit URL
     url = 'https://spaceimages-mars.com'
@@ -90,6 +101,10 @@ def featured_image(browser):
 # ## Mars Facts
 
 def mars_facts():
+    # Initiate headless driver for deployment
+    # executable_path = {'executable_path': ChromeDriverManager().install()}
+    # browser = Browser('chrome', **executable_path, headless=True)
+
     # Add try/except for error handling
     try:
         # Use 'read_html' to scrape the facts table into a dataframe
@@ -104,6 +119,53 @@ def mars_facts():
 
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
+
+#Create a function to scrape hemisphere data
+def hemisphere_data(browser):
+    url = 'https://marshemispheres.com/'
+    # Initiate headless driver for deployment
+    # executable_path = {'executable_path': ChromeDriverManager().install()}
+    # browser = Browser('chrome', **executable_path, headless=True)
+    browser.visit(url + "index.html")
+    html = browser.html
+    hemi_soup = soup(html, 'html.parser')
+    # Optional delay for loading the page
+    # browser.is_element_present_by_css('div.list_text', wait_time=1) # ??????
+
+# Create a list to hold the images and titles.
+    hemisphere_image_urls = []
+
+# Code to retrieve the image urls and titles for each hemisphere.
+
+    # links = browser.find_by_css('a.product-item img')
+
+    for i in range(4):
+        browser.find_by_css('a.product-item img')[i].click()
+        
+        try:
+            sample_elem = hemi_soup.find('a', text='Sample').get("href")
+            hemisphere['img_url'] = url + sample_elem
+            
+            title_elem = hemi_soup.find("h2", 'title').get_text()
+            hemisphere['title'] = title_elem
+
+        except AttributeError:
+            sample_elem = None
+            title_elem = None
+        hemisphere = {
+            "title":title_elem,
+            "img_url": sample_elem
+        }
+        hemisphere_image_urls.append(hemisphere)
+        browser.back()
+
+
+    # Print the list that holds the dictionary of each image url and title.
+   
+
+    #return the scraped data as a list of dictionaries with the URL string and title of each hemisphere image
+    return hemisphere_image_urls
+
 
 if __name__ == "__main__":
 
